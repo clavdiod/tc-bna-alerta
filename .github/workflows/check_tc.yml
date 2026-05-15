@@ -1,6 +1,11 @@
 name: Check TC BNA
 
+
 on:
+  workflow_dispatch:  # permite correrlo manualmente
+  schedule:
+    - cron: "*/1 15-23 * * *"
+
   schedule:
     - cron: "*/1 15-23 * * *"  # cada minuto entre las 15 y las 23 hs
 jobs:
