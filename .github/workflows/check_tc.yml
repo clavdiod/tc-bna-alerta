@@ -1,5 +1,7 @@
-import requests, os, json, time, subprocess
+import requests, os, json, time, smtplib
 from bs4 import BeautifulSoup
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 URL = "https://www.bna.com.ar/Personas"
 HISTORICO_FILE = "data/historico.json"
@@ -11,14 +13,16 @@ def obtener_cotizaciones():
 
     # Buscar tabla de divisas
     tabla = soup.find("table", {"id": "cotizacionDivisas"})
-    fecha = soup.find("div", {"class": "fecha"}).text.strip()
-
+    filas = tabla.find_all("tr")[1:]
     cotizaciones = {}
-    for fila in tabla.find_all("tr")[1:]:
+    for fila in filas:
         cols = [c.text.strip() for c in fila.find_all("td")]
         if len(cols) >= 3:
             moneda, compra, venta = cols[0], cols[1], cols[2]
             cotizaciones[moneda] = {"compra": compra, "venta": venta}
+
+    # Fecha de hoy (puede ajustarse si la web muestra otra)
+    fecha = time.strftime("%-d/%-m/%Y")
     return fecha, cotizaciones
 
 def guardar_historico(fecha, cotizaciones):
@@ -33,17 +37,26 @@ def guardar_historico(fecha, cotizaciones):
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 def enviar_mail(fecha, cotizaciones):
-    # armar el texto en formato tabla
-    lineas = [f"{fecha}\tCompra\tVenta"]
+    # armar cuerpo del mail
+    lineas = [f"Fecha: {fecha}", "Moneda\tCompra\tVenta"]
     for moneda, valores in cotizaciones.items():
         lineas.append(f"{moneda}\t{valores['compra']}\t{valores['venta']}")
-    mensaje = "Subject: Alerta TC BNA\n\n" + "\n".join(lineas)
+    cuerpo = "\n".join(lineas)
 
-    # enviar mail con sendmail
-    subprocess.run(
-        ["sendmail", "isaac.dabul@zurich.com", "clavdio81@hotmail.com"],
-        input=mensaje.encode()
-    )
+    msg = MIMEMultipart()
+    msg["From"] = "github-actions@github.com"
+    msg["To"] = "isaac.dabul@zurich.com"
+    msg["Cc"] = "clavdio81@hotmail.com"
+    msg["Subject"] = f"Alerta TC BNA - {fecha}"
+    msg.attach(MIMEText(cuerpo, "plain"))
+
+    # enviar usando SMTP (requiere que el runner tenga sendmail/postfix configurado)
+    with smtplib.SMTP("localhost") as server:
+        server.sendmail(
+            msg["From"],
+            [msg["To"], msg["Cc"]],
+            msg.as_string()
+        )
 
 def main():
     while True:
