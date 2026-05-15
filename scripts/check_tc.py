@@ -76,7 +76,7 @@ def main():
     while True:
         fecha, cotizaciones = obtener_cotizaciones()
         if not cotizaciones:
-            print("No se pudieron obtener cotizaciones. Reintentando en 60 segundos...")
+            print("⚠️ No se pudieron obtener cotizaciones. Reintentando en 60 segundos...")
             time.sleep(60)
             continue
 
@@ -91,7 +91,7 @@ def main():
             print(f"✅ Detectada nueva fecha {fecha}. Histórico actualizado y mail enviado.")
             break
         else:
-            print(f"⏳ Fecha {fecha} ya registrada. Reintentando en 1 segundo...")
+            print(f"⏳ Fecha {fecha} ya registrada ({ultima_fecha}). Reintentando en 1 segundo...")
             time.sleep(1)
 
 if __name__ == "__main__":
