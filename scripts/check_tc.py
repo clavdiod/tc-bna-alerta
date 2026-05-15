@@ -34,10 +34,16 @@ def guardar_historico(fecha, cotizaciones):
     data.append({"fecha": fecha, "cotizaciones": cotizaciones})
     json.dump(data, open(HISTORICO, "w"), indent=2)
 
-def enviar_mail(fecha):
-    # usa sendmail genérico
-    mensaje = f"Subject: Alerta TC BNA\n\nNueva fecha detectada: {fecha}"
+def enviar_mail(fecha, cotizaciones):
+    # armar el texto en formato tabla
+    lineas = [f"{fecha}\tCompra\tVenta"]
+    for moneda, valores in cotizaciones.items():
+        lineas.append(f"{moneda}\t{valores['compra']}\t{valores['venta']}")
+    mensaje = "Subject: Alerta TC BNA\n\n" + "\n".join(lineas)
+    
+    # enviar mail con sendmail
     subprocess.run(["sendmail", "isaac.dabul@zurich.com"], input=mensaje.encode())
+
 
 def main():
     fecha, cotizaciones = obtener_cotizaciones()
