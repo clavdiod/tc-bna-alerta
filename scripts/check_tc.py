@@ -26,7 +26,7 @@ def obtener_cotizaciones():
     return fecha, cotizaciones
 
 def guardar_historico(fecha, cotizaciones):
-    os.makedirs("data", exist_ok=True)  # crea la carpeta si no existe
+    os.makedirs("data", exist_ok=True)
     if os.path.exists(HISTORICO):
         data = json.load(open(HISTORICO))
     else:
@@ -34,12 +34,24 @@ def guardar_historico(fecha, cotizaciones):
     data.append({"fecha": fecha, "cotizaciones": cotizaciones})
     json.dump(data, open(HISTORICO, "w"), indent=2)
 
+def enviar_mail(fecha):
+    # usa sendmail genérico
+    mensaje = f"Subject: Alerta TC BNA\n\nNueva fecha detectada: {fecha}"
+    subprocess.run(["sendmail", "isaac.dabul@zurich.com"], input=mensaje.encode())
+
 def main():
     fecha, cotizaciones = obtener_cotizaciones()
     ultima_fecha = open(FECHA_FILE).read().strip() if os.path.exists(FECHA_FILE) else ""
+    
     if fecha != ultima_fecha:
         guardar_historico(fecha, cotizaciones)
         open(FECHA_FILE, "w").write(fecha)
+        enviar_mail(fecha)
+    elif ultima_fecha == "":
+        # primera vez: guarda un valor inicial y manda mail
+        guardar_historico(fecha, cotizaciones)
+        open(FECHA_FILE, "w").write(fecha)
+        enviar_mail(fecha)
 
 if __name__ == "__main__":
     main()
