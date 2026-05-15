@@ -31,5 +31,5 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add data/*
-          git commit -m "Update historico"
-          git push
+          git commit -m "Update historico" || echo "No hay cambios para guardar"
+          git push || echo "Nada nuevo para subir"
