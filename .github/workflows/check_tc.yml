@@ -26,7 +26,7 @@ jobs:
         run: |
           python scripts/check_tc.py || echo "Error en ejecución, continuar..."
 
-      - name: Save historico
+            - name: Save historico
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
