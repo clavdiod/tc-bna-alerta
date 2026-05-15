@@ -11,10 +11,10 @@ def obtener_cotizaciones():
     r = requests.get(URL, verify=False)
     soup = BeautifulSoup(r.text, "html.parser")
 
-    # Buscar tabla por ID o por texto
+    # Buscar tabla principal
     tabla = soup.find("table", {"id": "cotizacionDivisas"})
     if tabla is None:
-        # Buscar por encabezado alternativo si el ID cambió
+        # Buscar alternativa si el ID cambió
         tablas = soup.find_all("table")
         for t in tablas:
             encabezado = t.find("th")
@@ -61,12 +61,16 @@ def enviar_mail(fecha, cotizaciones):
     msg["Subject"] = f"Alerta TC BNA - {fecha}"
     msg.attach(MIMEText(cuerpo, "plain"))
 
-    with smtplib.SMTP("localhost") as server:
-        server.sendmail(
-            msg["From"],
-            [msg["To"], msg["Cc"]],
-            msg.as_string()
-        )
+    try:
+        with smtplib.SMTP("localhost") as server:
+            server.sendmail(
+                msg["From"],
+                [msg["To"], msg["Cc"]],
+                msg.as_string()
+            )
+        print("📧 Mail enviado correctamente.")
+    except Exception as e:
+        print(f"⚠️ Error al enviar mail: {e}")
 
 def main():
     while True:
@@ -75,6 +79,7 @@ def main():
             print("No se pudieron obtener cotizaciones. Reintentando en 60 segundos...")
             time.sleep(60)
             continue
+
         ultima_fecha = ""
         if os.path.exists(FECHA_FILE):
             ultima_fecha = open(FECHA_FILE).read().strip()
@@ -83,9 +88,10 @@ def main():
             guardar_historico(fecha, cotizaciones)
             open(FECHA_FILE, "w").write(fecha)
             enviar_mail(fecha, cotizaciones)
-            print(f"✅ Actualizado histórico y enviado mail con fecha {fecha}")
+            print(f"✅ Detectada nueva fecha {fecha}. Histórico actualizado y mail enviado.")
             break
         else:
+            print(f"⏳ Fecha {fecha} ya registrada. Reintentando en 1 segundo...")
             time.sleep(1)
 
 if __name__ == "__main__":
