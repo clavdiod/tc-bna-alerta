@@ -2,8 +2,8 @@ name: Check TC BNA
 
 on:
   workflow_dispatch:   # correrlo a mano
- schedule:
-  - cron: "* 15-23 * * *"
+  schedule:
+    - cron: "*/1 15-23 * * *"   # cada minuto entre las 15 y las 23 hs
 
 permissions:
   contents: write   # permiso para que el robot suba archivos al repo
