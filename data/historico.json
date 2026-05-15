@@ -1,50 +1,50 @@
 [
   {
-    "fecha": "15/5/2026",
+    "fecha": "14/5/2026",
     "cotizaciones": {
       "Dólar U.S.A": {
-        "compra": "1385.5000",
-        "venta": "1394.5000"
+        "compra": "1380.5000",
+        "venta": "1390.5000"
       },
       "Libra Esterlina": {
-        "compra": "1844.6547",
-        "venta": "1860.8208"
+        "compra": "1830.6547",
+        "venta": "1850.8208"
       },
       "Euro": {
-        "compra": "1608.7041",
-        "venta": "1622.6402"
+        "compra": "1590.7041",
+        "venta": "1610.6402"
       },
       "Francos Suizos": {
-        "compra": "175953.4916",
-        "venta": "177334.5240"
+        "compra": "175000.4916",
+        "venta": "176500.5240"
       },
       "YENES": {
-        "compra": "872.3689",
-        "venta": "879.5674"
+        "compra": "870.3689",
+        "venta": "878.5674"
       },
       "Dólares Canadienses": {
-        "compra": "100713.9464",
-        "venta": "101515.7968"
+        "compra": "100500.9464",
+        "venta": "101300.7968"
       },
       "Coronas Danesas": {
-        "compra": "21507.3320",
-        "venta": "21786.0297"
+        "compra": "21400.3320",
+        "venta": "21700.0297"
       },
       "Coronas Noruegas": {
-        "compra": "14849.5033",
-        "venta": "15082.7320"
+        "compra": "14750.5033",
+        "venta": "15000.7320"
       },
       "Coronas Suecas": {
-        "compra": "14626.3774",
-        "venta": "14862.5096"
+        "compra": "14500.3774",
+        "venta": "14800.5096"
       },
       "Yuan": {
-        "compra": "19909.9771",
-        "venta": "20905.4760"
+        "compra": "19800.9771",
+        "venta": "20800.4760"
       },
       "Dólar Australiano": {
-        "compra": "989.8012",
-        "venta": "999.0198"
+        "compra": "980.8012",
+        "venta": "995.0198"
       }
     }
   }
