@@ -1,64 +1,74 @@
-import requests
+import requests, os, json, time, smtplib
 from bs4 import BeautifulSoup
-import os, subprocess, json
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 URL = "https://www.bna.com.ar/Personas"
-HISTORICO = "data/historico.json"
+HISTORICO_FILE = "data/historico.json"
 FECHA_FILE = "data/ultima_fecha.txt"
 
 def obtener_cotizaciones():
     r = requests.get(URL, verify=False)
     soup = BeautifulSoup(r.text, "html.parser")
-    
-    # Buscar la tabla de DIVISAS
+
     tabla = soup.find("table", {"id": "cotizacionDivisas"})
-    fecha = soup.find("div", {"class": "fecha"}).text.strip()
-    
+    filas = tabla.find_all("tr")[1:]
     cotizaciones = {}
-    for fila in tabla.find_all("tr")[1:]:
+    for fila in filas:
         cols = [c.text.strip() for c in fila.find_all("td")]
         if len(cols) >= 3:
             moneda, compra, venta = cols[0], cols[1], cols[2]
             cotizaciones[moneda] = {"compra": compra, "venta": venta}
+
+    fecha = time.strftime("%-d/%-m/%Y")
     return fecha, cotizaciones
 
 def guardar_historico(fecha, cotizaciones):
-    os.makedirs("data", exist_ok=True)
-    if os.path.exists(HISTORICO):
-        data = json.load(open(HISTORICO))
+    nuevo = {"fecha": fecha, "cotizaciones": cotizaciones}
+    if os.path.exists(HISTORICO_FILE):
+        with open(HISTORICO_FILE, "r") as f:
+            data = json.load(f)
     else:
         data = []
-    data.append({"fecha": fecha, "cotizaciones": cotizaciones})
-    json.dump(data, open(HISTORICO, "w"), indent=2)
+    data.append(nuevo)
+    with open(HISTORICO_FILE, "w") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
 
 def enviar_mail(fecha, cotizaciones):
-    # armar el texto en formato tabla
-    lineas = [f"{fecha}\tCompra\tVenta"]
+    lineas = [f"Fecha: {fecha}", "Moneda\tCompra\tVenta"]
     for moneda, valores in cotizaciones.items():
         lineas.append(f"{moneda}\t{valores['compra']}\t{valores['venta']}")
-    mensaje = "Subject: Alerta TC BNA\n\n" + "\n".join(lineas)
-    
-    # enviar mail con sendmail
-    subprocess.run(["sendmail", "isaac.dabul@zurich.com"], input=mensaje.encode())
+    cuerpo = "\n".join(lineas)
 
+    msg = MIMEMultipart()
+    msg["From"] = "github-actions@github.com"
+    msg["To"] = "isaac.dabul@zurich.com"
+    msg["Cc"] = "clavdio81@hotmail.com"
+    msg["Subject"] = f"Alerta TC BNA - {fecha}"
+    msg.attach(MIMEText(cuerpo, "plain"))
+
+    with smtplib.SMTP("localhost") as server:
+        server.sendmail(
+            msg["From"],
+            [msg["To"], msg["Cc"]],
+            msg.as_string()
+        )
 
 def main():
-    fecha, cotizaciones = obtener_cotizaciones()
-    ultima_fecha = open(FECHA_FILE).read().strip() if os.path.exists(FECHA_FILE) else ""
-    
-if fecha != ultima_fecha:
-    guardar_historico(fecha, cotizaciones)
-    open(FECHA_FILE, "w").write(fecha)
-    enviar_mail(fecha, cotizaciones)
-elif ultima_fecha == "":
-    # primera vez: guarda un valor inicial y manda mail
-    guardar_historico(fecha, cotizaciones)
-    open(FECHA_FILE, "w").write(fecha)
-    enviar_mail(fecha, cotizaciones)
+    while True:
+        fecha, cotizaciones = obtener_cotizaciones()
+        ultima_fecha = ""
+        if os.path.exists(FECHA_FILE):
+            ultima_fecha = open(FECHA_FILE).read().strip()
 
+        if fecha != ultima_fecha:
+            guardar_historico(fecha, cotizaciones)
+            open(FECHA_FILE, "w").write(fecha)
+            enviar_mail(fecha, cotizaciones)
+            print(f"Actualizado histórico y enviado mail con fecha {fecha}")
+            break
+        else:
+            time.sleep(1)
 
 if __name__ == "__main__":
     main()
