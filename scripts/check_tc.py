@@ -49,15 +49,16 @@ def main():
     fecha, cotizaciones = obtener_cotizaciones()
     ultima_fecha = open(FECHA_FILE).read().strip() if os.path.exists(FECHA_FILE) else ""
     
-    if fecha != ultima_fecha:
-        guardar_historico(fecha, cotizaciones)
-        open(FECHA_FILE, "w").write(fecha)
-        enviar_mail(fecha)
-    elif ultima_fecha == "":
-        # primera vez: guarda un valor inicial y manda mail
-        guardar_historico(fecha, cotizaciones)
-        open(FECHA_FILE, "w").write(fecha)
-        enviar_mail(fecha)
+if fecha != ultima_fecha:
+    guardar_historico(fecha, cotizaciones)
+    open(FECHA_FILE, "w").write(fecha)
+    enviar_mail(fecha, cotizaciones)
+elif ultima_fecha == "":
+    # primera vez: guarda un valor inicial y manda mail
+    guardar_historico(fecha, cotizaciones)
+    open(FECHA_FILE, "w").write(fecha)
+    enviar_mail(fecha, cotizaciones)
+
 
 if __name__ == "__main__":
     main()
