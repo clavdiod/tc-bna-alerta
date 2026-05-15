@@ -11,7 +11,21 @@ def obtener_cotizaciones():
     r = requests.get(URL, verify=False)
     soup = BeautifulSoup(r.text, "html.parser")
 
+    # Buscar tabla por ID o por texto
     tabla = soup.find("table", {"id": "cotizacionDivisas"})
+    if tabla is None:
+        # Buscar por encabezado alternativo si el ID cambió
+        tablas = soup.find_all("table")
+        for t in tablas:
+            encabezado = t.find("th")
+            if encabezado and "Divisas" in encabezado.text:
+                tabla = t
+                break
+
+    if tabla is None:
+        print("⚠️ No se encontró la tabla de cotizaciones en la web del BNA.")
+        return None, {}
+
     filas = tabla.find_all("tr")[1:]
     cotizaciones = {}
     for fila in filas:
@@ -57,6 +71,10 @@ def enviar_mail(fecha, cotizaciones):
 def main():
     while True:
         fecha, cotizaciones = obtener_cotizaciones()
+        if not cotizaciones:
+            print("No se pudieron obtener cotizaciones. Reintentando en 60 segundos...")
+            time.sleep(60)
+            continue
         ultima_fecha = ""
         if os.path.exists(FECHA_FILE):
             ultima_fecha = open(FECHA_FILE).read().strip()
@@ -65,7 +83,7 @@ def main():
             guardar_historico(fecha, cotizaciones)
             open(FECHA_FILE, "w").write(fecha)
             enviar_mail(fecha, cotizaciones)
-            print(f"Actualizado histórico y enviado mail con fecha {fecha}")
+            print(f"✅ Actualizado histórico y enviado mail con fecha {fecha}")
             break
         else:
             time.sleep(1)
