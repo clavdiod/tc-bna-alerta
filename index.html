@@ -17,7 +17,7 @@
     th {
       background-color: #eee;
     }
-    select {
+    select, button {
       margin: 10px;
     }
   </style>
@@ -32,6 +32,9 @@
   <!-- Selector de moneda -->
   <label for="monedaSelect">Elegí una moneda:</label>
   <select id="monedaSelect"></select>
+
+  <!-- Botón exportar -->
+  <button id="exportBtn">Exportar tabla a CSV</button>
 
   <!-- Tabla de cotizaciones -->
   <table id="tabla">
@@ -57,6 +60,7 @@
         const monedaSelect = document.getElementById("monedaSelect");
         const tbody = document.querySelector("#tabla tbody");
         const ctx = document.getElementById("grafico").getContext("2d");
+        let chart; // referencia al gráfico
 
         // llenar el selector de fechas
         data.forEach((registro, i) => {
@@ -92,7 +96,9 @@
           const valoresCompra = data.map(r => r.cotizaciones[moneda]?.compra || null);
           const valoresVenta = data.map(r => r.cotizaciones[moneda]?.venta || null);
 
-          new Chart(ctx, {
+          if (chart) chart.destroy(); // destruir gráfico anterior
+
+          chart = new Chart(ctx, {
             type: "line",
             data: {
               labels: fechas,
@@ -120,6 +126,25 @@
           });
         }
 
+        // función para exportar tabla a CSV
+        function exportarCSV() {
+          let csv = "Moneda,Compra,Venta\n";
+          const filas = tbody.querySelectorAll("tr");
+          filas.forEach(fila => {
+            const cols = fila.querySelectorAll("td");
+            const linea = Array.from(cols).map(td => td.textContent).join(",");
+            csv += linea + "\n";
+          });
+
+          const blob = new Blob([csv], { type: "text/csv" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "cotizaciones.csv";
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+
         // mostrar última fecha y graficar dólar por defecto
         mostrarFecha(data.length - 1);
         graficar("Dólar U.S.A");
@@ -133,6 +158,9 @@
         monedaSelect.addEventListener("change", e => {
           graficar(e.target.value);
         });
+
+        // exportar CSV
+        document.getElementById("exportBtn").addEventListener("click", exportarCSV);
       })
       .catch(err => {
         document.querySelector("#tabla tbody").innerHTML =
