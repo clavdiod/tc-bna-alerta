@@ -2,27 +2,79 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>TC BNA Alerta</title>
+  <title>TC BNA Histórico</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #999;
+      padding: 6px;
+      text-align: center;
+    }
+    th {
+      background-color: #eee;
+    }
+  </style>
 </head>
 <body>
   <h1>Histórico de Divisas</h1>
-  <pre id="tabla"></pre>
+
+  <!-- Selector de fecha -->
+  <label for="fechaSelect">Elegí una fecha:</label>
+  <select id="fechaSelect"></select>
+
+  <!-- Tabla de cotizaciones -->
+  <table id="tabla">
+    <thead>
+      <tr>
+        <th>Moneda</th>
+        <th>Compra</th>
+        <th>Venta</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
     // cargar el archivo historico.json
     fetch("data/historico.json")
       .then(response => response.json())
       .then(data => {
-        // tomar el último registro
-        const ultimo = data[data.length - 1];
-        let texto = `${ultimo.fecha}\tCompra\tVenta\n`;
-        for (const [moneda, valores] of Object.entries(ultimo.cotizaciones)) {
-          texto += `${moneda}\t${valores.compra}\t${valores.venta}\n`;
+        const select = document.getElementById("fechaSelect");
+        const tbody = document.querySelector("#tabla tbody");
+
+        // llenar el selector con todas las fechas
+        data.forEach((registro, i) => {
+          const opt = document.createElement("option");
+          opt.value = i;
+          opt.textContent = registro.fecha;
+          select.appendChild(opt);
+        });
+
+        // función para mostrar una fecha
+        function mostrarFecha(idx) {
+          tbody.innerHTML = "";
+          const registro = data[idx];
+          for (const [moneda, valores] of Object.entries(registro.cotizaciones)) {
+            const fila = document.createElement("tr");
+            fila.innerHTML = `<td>${moneda}</td><td>${valores.compra}</td><td>${valores.venta}</td>`;
+            tbody.appendChild(fila);
+          }
         }
-        document.getElementById("tabla").textContent = texto;
+
+        // mostrar la última fecha por defecto
+        mostrarFecha(data.length - 1);
+
+        // cambiar cuando el usuario elige otra fecha
+        select.addEventListener("change", e => {
+          mostrarFecha(e.target.value);
+        });
       })
       .catch(err => {
-        document.getElementById("tabla").textContent = "Todavía no hay datos guardados.";
+        document.querySelector("#tabla tbody").innerHTML =
+          "<tr><td colspan='3'>Todavía no hay datos guardados.</td></tr>";
       });
   </script>
 </body>
