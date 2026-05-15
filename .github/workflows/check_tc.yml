@@ -17,4 +17,12 @@ jobs:
       - name: Install dependencies
         run: pip install requests beautifulsoup4
       - name: Run script
+            - name: Save historico
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add data/*
+          git commit -m "Update historico"
+          git push
+
         run: python scripts/check_tc.py
