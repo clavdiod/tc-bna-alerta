@@ -7,7 +7,7 @@ HISTORICO = "data/historico.json"
 FECHA_FILE = "data/ultima_fecha.txt"
 
 def obtener_cotizaciones():
-    r = requests.get(URL)
+    r = requests.get(URL, verify=False)
     soup = BeautifulSoup(r.text, "html.parser")
     tabla = soup.find("table", {"id": "cotizacionDivisas"})
     fecha = soup.find("div", {"class": "fecha"}).text.strip()
@@ -21,7 +21,7 @@ def obtener_cotizaciones():
 
 def enviar_alerta(fecha, cotizaciones):
     mensaje = f"""Subject: Actualización TC BNA {fecha}
-To: tu_correo@ejemplo.com
+To: isaac.dabul@zurich.com
 From: alerta@tc-bna.com
 
 Nueva fecha detectada: {fecha}
