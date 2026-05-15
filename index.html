@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>TC BNA Histórico</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     table {
       border-collapse: collapse;
@@ -16,6 +17,9 @@
     th {
       background-color: #eee;
     }
+    select {
+      margin: 10px;
+    }
   </style>
 </head>
 <body>
@@ -24,6 +28,10 @@
   <!-- Selector de fecha -->
   <label for="fechaSelect">Elegí una fecha:</label>
   <select id="fechaSelect"></select>
+
+  <!-- Selector de moneda -->
+  <label for="monedaSelect">Elegí una moneda:</label>
+  <select id="monedaSelect"></select>
 
   <!-- Tabla de cotizaciones -->
   <table id="tabla">
@@ -37,23 +45,37 @@
     <tbody></tbody>
   </table>
 
+  <!-- Gráfico -->
+  <h2>Evolución histórica</h2>
+  <canvas id="grafico" width="400" height="200"></canvas>
+
   <script>
-    // cargar el archivo historico.json
     fetch("data/historico.json")
       .then(response => response.json())
       .then(data => {
-        const select = document.getElementById("fechaSelect");
+        const fechaSelect = document.getElementById("fechaSelect");
+        const monedaSelect = document.getElementById("monedaSelect");
         const tbody = document.querySelector("#tabla tbody");
+        const ctx = document.getElementById("grafico").getContext("2d");
 
-        // llenar el selector con todas las fechas
+        // llenar el selector de fechas
         data.forEach((registro, i) => {
           const opt = document.createElement("option");
           opt.value = i;
           opt.textContent = registro.fecha;
-          select.appendChild(opt);
+          fechaSelect.appendChild(opt);
         });
 
-        // función para mostrar una fecha
+        // llenar el selector de monedas (usamos la última fecha para obtener todas)
+        const monedas = Object.keys(data[data.length - 1].cotizaciones);
+        monedas.forEach(moneda => {
+          const opt = document.createElement("option");
+          opt.value = moneda;
+          opt.textContent = moneda;
+          monedaSelect.appendChild(opt);
+        });
+
+        // función para mostrar tabla de una fecha
         function mostrarFecha(idx) {
           tbody.innerHTML = "";
           const registro = data[idx];
@@ -64,12 +86,52 @@
           }
         }
 
-        // mostrar la última fecha por defecto
-        mostrarFecha(data.length - 1);
+        // función para graficar una moneda
+        function graficar(moneda) {
+          const fechas = data.map(r => r.fecha);
+          const valoresCompra = data.map(r => r.cotizaciones[moneda]?.compra || null);
+          const valoresVenta = data.map(r => r.cotizaciones[moneda]?.venta || null);
 
-        // cambiar cuando el usuario elige otra fecha
-        select.addEventListener("change", e => {
+          new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: fechas,
+              datasets: [
+                {
+                  label: "Compra",
+                  data: valoresCompra,
+                  borderColor: "blue",
+                  fill: false
+                },
+                {
+                  label: "Venta",
+                  data: valoresVenta,
+                  borderColor: "red",
+                  fill: false
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { position: "top" }
+              }
+            }
+          });
+        }
+
+        // mostrar última fecha y graficar dólar por defecto
+        mostrarFecha(data.length - 1);
+        graficar("Dólar U.S.A");
+
+        // cambiar fecha
+        fechaSelect.addEventListener("change", e => {
           mostrarFecha(e.target.value);
+        });
+
+        // cambiar moneda
+        monedaSelect.addEventListener("change", e => {
+          graficar(e.target.value);
         });
       })
       .catch(err => {
