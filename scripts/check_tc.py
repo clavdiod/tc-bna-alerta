@@ -24,3 +24,22 @@ def obtener_cotizaciones():
             moneda, compra, venta = cols[0], cols[1], cols[2]
             cotizaciones[moneda] = {"compra": compra, "venta": venta}
     return fecha, cotizaciones
+
+def guardar_historico(fecha, cotizaciones):
+    os.makedirs("data", exist_ok=True)  # crea la carpeta si no existe
+    if os.path.exists(HISTORICO):
+        data = json.load(open(HISTORICO))
+    else:
+        data = []
+    data.append({"fecha": fecha, "cotizaciones": cotizaciones})
+    json.dump(data, open(HISTORICO, "w"), indent=2)
+
+def main():
+    fecha, cotizaciones = obtener_cotizaciones()
+    ultima_fecha = open(FECHA_FILE).read().strip() if os.path.exists(FECHA_FILE) else ""
+    if fecha != ultima_fecha:
+        guardar_historico(fecha, cotizaciones)
+        open(FECHA_FILE, "w").write(fecha)
+
+if __name__ == "__main__":
+    main()
