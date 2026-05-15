@@ -1,28 +1,35 @@
 name: Check TC BNA
 
-
 on:
-  workflow_dispatch:  # permite correrlo manualmente
+  workflow_dispatch:   # permite correrlo a mano
   schedule:
-    - cron: "*/1 15-23 * * *"  # cada minuto entre las 15 y las 23 hs
+    - cron: "*/1 15-23 * * *"   # cada minuto entre las 15 y las 23 hs
+
+permissions:
+  contents: write   # permiso para que el robot suba archivos al repo
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
+
       - name: Install dependencies
         run: pip install requests beautifulsoup4
+
       - name: Run script
-            - name: Save historico
+        run: |
+          python scripts/check_tc.py || echo "Error en ejecución, continuar..."
+
+      - name: Save historico
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add data/*
           git commit -m "Update historico"
           git push
-
-        run: python scripts/check_tc.py
