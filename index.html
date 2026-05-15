@@ -6,6 +6,24 @@
 </head>
 <body>
   <h1>Histórico de Divisas</h1>
-  <p>Acá se van a mostrar las cotizaciones guardadas en historico.json.</p>
+  <pre id="tabla"></pre>
+
+  <script>
+    // cargar el archivo historico.json
+    fetch("data/historico.json")
+      .then(response => response.json())
+      .then(data => {
+        // tomar el último registro
+        const ultimo = data[data.length - 1];
+        let texto = `${ultimo.fecha}\tCompra\tVenta\n`;
+        for (const [moneda, valores] of Object.entries(ultimo.cotizaciones)) {
+          texto += `${moneda}\t${valores.compra}\t${valores.venta}\n`;
+        }
+        document.getElementById("tabla").textContent = texto;
+      })
+      .catch(err => {
+        document.getElementById("tabla").textContent = "Todavía no hay datos guardados.";
+      });
+  </script>
 </body>
 </html>
