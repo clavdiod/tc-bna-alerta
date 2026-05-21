@@ -11,13 +11,19 @@ def obtener_cotizaciones():
     r = requests.get(URL, verify=False)
     soup = BeautifulSoup(r.text, "html.parser")
 
-    # Buscar tabla de billetes/divisas
-    tabla = soup.find("table", {"class": "cotizacion"})
-    if tabla is None:
-        print("⚠️ No se encontró la tabla de cotizaciones en la web del BNA.")
+    # Buscar el bloque de DIVISAS
+    divisas_div = soup.find("div", {"id": "divisas"})
+    if divisas_div is None:
+        print("⚠️ No se encontró la sección de Divisas en la web del BNA.")
         return None, {}
 
-    # Extraer fecha real del HTML (th con clase fechaCot)
+    # Dentro de divisas, buscar la tabla
+    tabla = divisas_div.find("table", {"class": "cotizacion"})
+    if tabla is None:
+        print("⚠️ No se encontró la tabla de Divisas.")
+        return None, {}
+
+    # Extraer fecha real del HTML (th con clase fechaCot dentro de la tabla de divisas)
     fecha_tag = tabla.find("th", {"class": "fechaCot"})
     if fecha_tag:
         fecha = fecha_tag.text.strip()
@@ -73,7 +79,7 @@ def main():
     while True:
         fecha, cotizaciones = obtener_cotizaciones()
         if not cotizaciones:
-            print("⚠️ No se pudieron obtener cotizaciones. Reintentando en 60 segundos...")
+            print("⚠️ No se pudieron obtener cotizaciones de Divisas. Reintentando en 60 segundos...")
             time.sleep(60)
             continue
 
@@ -81,7 +87,7 @@ def main():
         if os.path.exists(FECHA_FILE):
             ultima_fecha = open(FECHA_FILE).read().strip()
 
-        print(f"🔎 Fecha detectada en web: {fecha} | Última guardada: {ultima_fecha}")
+        print(f"🔎 Fecha detectada en web (Divisas): {fecha} | Última guardada: {ultima_fecha}")
 
         if fecha != ultima_fecha:
             guardar_historico(fecha, cotizaciones)
