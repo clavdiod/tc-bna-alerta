@@ -26,7 +26,7 @@ def obtener_cotizaciones():
         print("⚠️ No se encontró la tabla de cotizaciones en la web del BNA.")
         return None, {}
 
-    # Extraer fecha real del HTML si existe
+    # Extraer fecha real del HTML del BNA
     fecha_tag = soup.find("div", {"class": "fecha"})
     if fecha_tag:
         fecha = fecha_tag.text.strip()
