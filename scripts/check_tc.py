@@ -26,6 +26,13 @@ def obtener_cotizaciones():
         print("⚠️ No se encontró la tabla de cotizaciones en la web del BNA.")
         return None, {}
 
+    # Extraer fecha real del HTML si existe
+    fecha_tag = soup.find("div", {"class": "fecha"})
+    if fecha_tag:
+        fecha = fecha_tag.text.strip()
+    else:
+        fecha = time.strftime("%-d/%-m/%Y")
+
     filas = tabla.find_all("tr")[1:]
     cotizaciones = {}
     for fila in filas:
@@ -34,7 +41,6 @@ def obtener_cotizaciones():
             moneda, compra, venta = cols[0], cols[1], cols[2]
             cotizaciones[moneda] = {"compra": compra, "venta": venta}
 
-    fecha = time.strftime("%-d/%-m/%Y")
     return fecha, cotizaciones
 
 def guardar_historico(fecha, cotizaciones):
@@ -84,14 +90,16 @@ def main():
         if os.path.exists(FECHA_FILE):
             ultima_fecha = open(FECHA_FILE).read().strip()
 
+        print(f"🔎 Fecha detectada en web: {fecha} | Última guardada: {ultima_fecha}")
+
         if fecha != ultima_fecha:
             guardar_historico(fecha, cotizaciones)
             open(FECHA_FILE, "w").write(fecha)
             enviar_mail(fecha, cotizaciones)
-            print(f"✅ Detectada nueva fecha {fecha}. Histórico actualizado y mail enviado.")
+            print(f"✅ Nueva fecha {fecha} impactada en histórico y mail enviado.")
             break
         else:
-            print(f"⏳ Fecha {fecha} ya registrada ({ultima_fecha}). Reintentando en 1 segundo...")
+            print(f"⏳ Fecha {fecha} ya registrada. Reintentando en 1 segundo...")
             time.sleep(1)
 
 if __name__ == "__main__":
