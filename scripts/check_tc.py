@@ -11,23 +11,14 @@ def obtener_cotizaciones():
     r = requests.get(URL, verify=False)
     soup = BeautifulSoup(r.text, "html.parser")
 
-    # Buscar tabla principal
-    tabla = soup.find("table", {"id": "cotizacionDivisas"})
-    if tabla is None:
-        # Buscar alternativa si el ID cambió
-        tablas = soup.find_all("table")
-        for t in tablas:
-            encabezado = t.find("th")
-            if encabezado and "Divisas" in encabezado.text:
-                tabla = t
-                break
-
+    # Buscar tabla de billetes/divisas
+    tabla = soup.find("table", {"class": "cotizacion"})
     if tabla is None:
         print("⚠️ No se encontró la tabla de cotizaciones en la web del BNA.")
         return None, {}
 
-    # Extraer fecha real del HTML del BNA
-    fecha_tag = soup.find("div", {"class": "fecha"})
+    # Extraer fecha real del HTML (th con clase fechaCot)
+    fecha_tag = tabla.find("th", {"class": "fechaCot"})
     if fecha_tag:
         fecha = fecha_tag.text.strip()
     else:
