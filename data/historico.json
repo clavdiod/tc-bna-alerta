@@ -1730,5 +1730,54 @@
         "venta": "1056.4212"
       }
     }
+  },
+  {
+    "fecha": "12/8/2026",
+    "cotizaciones": {
+      "Dolar U.S.A": {
+        "compra": "1482.5000",
+        "venta": "1491.5000"
+      },
+      "Libra Esterlina": {
+        "compra": "1998.3954",
+        "venta": "2015.0070"
+      },
+      "Euro": {
+        "compra": "1707.4288",
+        "venta": "1721.5275"
+      },
+      "Franco Suizos *": {
+        "compra": "182353.7259",
+        "venta": "183708.6710"
+      },
+      "YENES *": {
+        "compra": "929.3015",
+        "venta": "936.5819"
+      },
+      "Dolares Canadienses *": {
+        "compra": "106361.7524",
+        "venta": "107165.1021"
+      },
+      "Coronas Danesas *": {
+        "compra": "22818.9203",
+        "venta": "23105.8782"
+      },
+      "Coronas Noruegas *": {
+        "compra": "15551.3300",
+        "venta": "15791.4969"
+      },
+      "Coronas Suecas *": {
+        "compra": "15503.7907",
+        "venta": "15748.5229"
+      },
+      "Yuan *": {
+        "compra": "21499.88955",
+        "venta": "22574.88402"
+      },
+      "Dolar Australiano": {
+        "compra": "1043.7168",
+        "venta": "1053.0383"
+      }
+    }
   }
 ]
